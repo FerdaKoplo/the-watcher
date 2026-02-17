@@ -23,7 +23,7 @@ namespace TheWatcher.Data.Models
             NotEquals,
             StartsWith,
             EndsWith,
-            Contain,
+            Contains,
             GreaterThan,
             LessThan
         }

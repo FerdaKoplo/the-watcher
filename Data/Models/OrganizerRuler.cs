@@ -29,7 +29,7 @@ namespace TheWatcher.Data.Models
         public RuleStatus Status { get; set; } = RuleStatus.Active;
         public List<RuleCondition> Conditions { get; set; }
     }
-        public enum RuleStatus
+    public enum RuleStatus
         {
             Draft,
             Active,
@@ -38,7 +38,7 @@ namespace TheWatcher.Data.Models
             Archived
         }
 
-        public enum RuleActionType 
+   public enum RuleActionType 
         { 
             Move, 
             Copy, 

@@ -26,7 +26,9 @@ namespace TheWatcher.Data.Models
         public int ExecutionBatchId { get; set; } 
         public ExecutionBatch Batch { get; set; }
 
-        public enum LogStatus
+       
+    }
+     public enum LogStatus
         {
             Success,
             Failed,
@@ -34,5 +36,4 @@ namespace TheWatcher.Data.Models
             Warning,
             DryRun
         }
-    }
 }
