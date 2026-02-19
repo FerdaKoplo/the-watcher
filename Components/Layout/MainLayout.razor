@@ -1,17 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<div class="flex bg-gray-50 min-h-screen">
+    
+    <div class="flex-none w-[15rem] border-r-2 border-black bg-white">
         <NavMenu />
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+    <main class="flex-1 p-8 lg:p-16">
+        
+        <article class=" pt-10">
             @Body
         </article>
+        
     </main>
 </div>

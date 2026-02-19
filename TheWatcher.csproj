@@ -68,9 +68,19 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.3" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Styles\" />
+    </ItemGroup>
+
+	
+	<Target Name="BuildTailwind" BeforeTargets="Build">
+        <Exec Command=" npx @tailwindcss/cli -i .\Styles\app.tailwind.css -o ./wwwroot/index.css --minify" />
+    </Target>
 
 </Project>

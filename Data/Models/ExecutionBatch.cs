@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 namespace TheWatcher.Data.Models
 {
     public class ExecutionBatch
@@ -12,10 +9,20 @@ namespace TheWatcher.Data.Models
         public DateTime RunDate { get; set; } = DateTime.Now;
 
         public string TriggeredByRuleName { get; set; }
-        public int TotalFilesProcessed { get; set; }
+        public int TotalFilesProcessed { get; private set; }
 
         public int TotalErrors { get; set; }
 
         public List<FileExecutionLog> Logs { get; set; } = new();
+        public void AddLog(FileExecutionLog log)
+        {
+            Logs.Add(log);
+            TotalFilesProcessed++;
+
+            if (log.Status == LogStatus.Failed)
+            {
+                TotalErrors++;
+            }
+        }
     }
 }

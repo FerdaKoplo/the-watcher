@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TheWatcher.Data.Models
 {
@@ -10,7 +7,7 @@ namespace TheWatcher.Data.Models
         [Key]
         public int Id { get; set; }
         public int OrganizedRuleId { get; set; }
-        public OrganizerRuler OrganizeRule {  get; set; }
+        public OrganizerRuler OrganizeRule { get; set; }
 
         public ConditionType Field { get; set; }
         public OperatorType Operator { get; set; }
@@ -27,7 +24,7 @@ namespace TheWatcher.Data.Models
             GreaterThan,
             LessThan
         }
-        public enum ConditionType 
+        public enum ConditionType
         {
             Extension,
             Size,

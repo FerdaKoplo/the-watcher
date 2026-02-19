@@ -1,0 +1,198 @@
+@page "/rules"
+@using TheWatcher.Data.Models
+@using TheWatcher.Services
+@using TheWatcher.Workers
+@inject IRuleRepository RuleRepo
+@inject OrchestratorWorker Worker
+@inject ILogger<Rules> Logger
+@inject IFolderPickerService FolderPicker
+
+<div class="space-y-12 max-w-6xl mx-auto">
+
+    <div>
+        <h3 class="font-sans text-3xl font-bold uppercase tracking-widest text-black">
+            Automation Rules
+        </h3>
+        <div class="h-1 w-20 bg-emerald-500 mt-2"></div>
+    </div>
+
+    <div class="border-2 border-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <h5 class="font-sans text-lg font-bold uppercase tracking-widest text-black border-b-2 border-black pb-4 mb-6">
+            Add New Rule
+        </h5>
+
+        <EditForm Model="@newRule" OnValidSubmit="HandleAddRule" class="space-y-6">
+
+            <div>
+                <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">Rule Name</label>
+                <InputText @bind-Value="newRule.Name"
+                           class="w-full border-2 border-black bg-white p-3 font-mono text-sm text-black outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] focus:-translate-y-1 focus:-translate-x-1"
+                           placeholder="e.g. Move PDFs to Docs" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">Source Folder</label>
+                    <div class="flex">
+                        <InputText @bind-Value="newRule.SourceDirectory"
+                                   class="w-full border-2 border-black border-r-0 bg-white p-3 font-mono text-sm text-black outline-none transition-all focus:bg-emerald-50"
+                                   placeholder="C:\Users\You\Downloads" />
+                        <button type="button" @onclick="PickSourceFolder"
+                                class="bg-black text-white border-2 border-black px-4 font-mono text-xs font-bold uppercase tracking-widest transition-all hover:bg-emerald-500 hover:text-black active:scale-95">
+                            Browse
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">Destination Folder</label>
+                    <div class="flex">
+                        <InputText @bind-Value="newRule.DestinationDirectory"
+                                   class="w-full border-2 border-black border-r-0 bg-white p-3 font-mono text-sm text-black outline-none transition-all focus:bg-emerald-50"
+                                   placeholder="C:\Users\You\Documents" />
+                        <button type="button" @onclick="PickDestinationFolder"
+                                class="bg-black text-white border-2 border-black px-4 font-mono text-xs font-bold uppercase tracking-widest transition-all hover:bg-emerald-500 hover:text-black active:scale-95">
+                            Browse
+                        </button>
+                    </div>
+                </div>
+                @* <div>
+                    <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">Source Folder</label>
+                    <InputText @bind-Value="newRule.SourceDirectory" 
+                               class="w-full border-2 border-black bg-white p-3 font-mono text-sm text-black outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] focus:-translate-y-1 focus:-translate-x-1" 
+                               placeholder="C:\Users\You\Downloads" />
+                </div>
+                <div>
+                    <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">Destination Folder</label>
+                    <InputText @bind-Value="newRule.DestinationDirectory" 
+                               class="w-full border-2 border-black bg-white p-3 font-mono text-sm text-black outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] focus:-translate-y-1 focus:-translate-x-1" 
+                               placeholder="C:\Users\You\Documents" />
+                </div> *@
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">Action Type</label>
+                    <InputSelect @bind-Value="newRule.ActionType"
+                                 class="w-full border-2 border-black bg-white p-3 font-mono text-sm text-black outline-none transition-all cursor-pointer focus:shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] focus:-translate-y-1 focus:-translate-x-1">
+                        @foreach (var action in Enum.GetValues(typeof(RuleActionType)))
+                        {
+                            <option value="@action">@action</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div>
+                    <label class="block font-mono text-xs font-bold uppercase tracking-widest text-gray-700 mb-2">File Extension (Condition)</label>
+                    <input @bind="tempExtension"
+                           class="w-full border-2 border-black bg-white p-3 font-mono text-sm text-black outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] focus:-translate-y-1 focus:-translate-x-1"
+                           placeholder=".pdf" />
+                </div>
+            </div>
+
+            <div class="pt-4">
+                <button type="submit"
+                        class="bg-emerald-500 border-2 border-black px-8 py-3 font-mono text-sm font-bold uppercase tracking-widest text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-emerald-400 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:-translate-x-0.5 active:shadow-none active:translate-y-1 active:translate-x-1">
+                    Save Rule
+                </button>
+            </div>
+        </EditForm>
+    </div>
+
+    <div class="border-2 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-x-auto">
+        <table class="w-full text-left font-mono text-sm border-collapse whitespace-nowrap">
+            <thead>
+                <tr class="bg-black text-white uppercase tracking-widest">
+                    <th class="p-4 border-b-2 border-black border-r-2 last:border-r-0">Name</th>
+                    <th class="p-4 border-b-2 border-black border-r-2 last:border-r-0">From</th>
+                    <th class="p-4 border-b-2 border-black border-r-2 last:border-r-0">To</th>
+                    <th class="p-4 border-b-2 border-black border-r-2 last:border-r-0">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (rules != null && rules.Any())
+                {
+                    @foreach (var rule in rules)
+                    {
+                        <tr class="hover:bg-emerald-50 transition-colors border-b-2 border-black last:border-b-0">
+                            <td class="p-4 border-r-2 border-black last:border-r-0 font-bold">@rule.Name</td>
+                            <td class="p-4 border-r-2 border-black last:border-r-0 text-gray-600">@rule.SourceDirectory</td>
+                            <td class="p-4 border-r-2 border-black last:border-r-0 text-gray-600">@rule.DestinationDirectory</td>
+                            <td class="p-4 border-r-2 border-black last:border-r-0">
+                                <span class="bg-black text-white px-2 py-1 text-xs uppercase tracking-wider">
+                                    @rule.ActionType
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-gray-500 uppercase tracking-widest">
+                            No active rules found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+@code {
+    private List<OrganizerRuler> rules = new();
+    private OrganizerRuler newRule = new();
+    private string tempExtension = "";
+
+    private async Task PickSourceFolder()
+    {
+        var folder = await FolderPicker.PickFolderAsync();
+        if (!string.IsNullOrEmpty(folder))
+        {
+            newRule.SourceDirectory = folder;
+        }
+    }
+
+    private async Task PickDestinationFolder()
+    {
+        var folder = await FolderPicker.PickFolderAsync();
+        if (!string.IsNullOrEmpty(folder))
+        {
+            newRule.DestinationDirectory = folder;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRules();
+    }
+
+    private async Task LoadRules()
+    {
+        rules = await RuleRepo.GetActiveRulesAsync();
+    }
+
+    private async Task HandleAddRule()
+    {
+        if (!string.IsNullOrEmpty(tempExtension))
+        {
+            newRule.Conditions = new List<RuleCondition>
+            {
+                new RuleCondition
+                {
+                    Field = RuleCondition.ConditionType.Extension,
+                    Operator = RuleCondition.OperatorType.Equals,
+                    Value = tempExtension
+                }
+            };
+        }
+
+        await RuleRepo.AddRuleAsync(newRule);
+        Logger.LogInformation($"User added rule: {newRule.Name}");
+
+        newRule = new OrganizerRuler();
+        tempExtension = "";
+        await LoadRules();
+    }
+}

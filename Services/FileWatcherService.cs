@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TheWatcher.Data.Models;
+﻿using TheWatcher.Data.Models;
 
 namespace TheWatcher.Services
 {
@@ -45,7 +42,8 @@ namespace TheWatcher.Services
                 _activeWathers.Add(path, watcher);
                 Console.WriteLine($"Started Watching : {path}");
             }
-            catch (Exception ex) { 
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Failed to watch {path}: {ex.Message}");
             }
         }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel.DataAnnotations;
-
-namespace TheWatcher.Data.Models
+﻿namespace TheWatcher.Data.Models
 {
     public class DuplicateGroup
     {

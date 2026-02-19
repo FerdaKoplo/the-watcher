@@ -1,5 +1,138 @@
 ﻿@page "/"
+@implements IDisposable
+@using Microsoft.EntityFrameworkCore
+@using TheWatcher.Data
+@using TheWatcher.Data.Models
+@inject AppDbContext DbContext
 
-<h1>Hello, world!</h1>
+<div class="space-y-10 max-w-6xl mx-auto">
 
-Welcome to your new app.
+    <div class="bg-emerald-400 border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+        <svg class="absolute -right-10 -bottom-10 opacity-20 w-64 h-64 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        
+        <h2 class="font-sans text-4xl md:text-5xl font-black uppercase tracking-tighter text-black relative z-10">
+            System Active
+        </h2>
+        <p class="font-mono text-sm md:text-base font-bold text-black mt-2 uppercase tracking-widest relative z-10">
+            > The Watcher background worker is monitoring directories.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="border-2 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(16,185,129,1)] transition-all">
+            <h4 class="font-mono text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Active Rules</h4>
+            <span class="font-sans text-5xl font-black text-black">@activeRuleCount</span>
+        </div>
+
+        <div class="border-2 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(16,185,129,1)] transition-all">
+            <h4 class="font-mono text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Files Processed</h4>
+            <span class="font-sans text-5xl font-black text-black">@totalProcessedCount</span>
+        </div>
+
+        <div class="border-2 border-black bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] transition-all">
+            <h4 class="font-mono text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Skipped / Failed</h4>
+            <span class="font-sans text-5xl font-black text-black">@failedCount</span>
+        </div>
+
+    </div>
+
+    <div class="border-2 border-black bg-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div class="border-b-2 border-gray-800 p-4 flex items-center justify-between">
+            <h3 class="font-mono text-sm font-bold uppercase tracking-widest text-emerald-400">
+                Terminal // Recent Activity
+            </h3>
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+            </div>
+        </div>
+        
+        <div class="p-6 font-mono text-sm overflow-y-auto max-h-96 space-y-3">
+            @if (recentLogs != null && recentLogs.Any())
+            {
+                foreach (var log in recentLogs)
+                {
+                    <div class="flex flex-col md:flex-row md:items-start gap-2 border-b border-gray-800 pb-2 last:border-0 last:pb-0">
+                        <span class="text-gray-500 shrink-0">[@log.Timestamp.ToString("HH:mm:ss")]</span>
+                        
+                        @if (log.Status == LogStatus.Success)
+                        {
+                            <span class="text-emerald-400 font-bold shrink-0">[SUCCESS]</span>
+                            <span class="text-gray-300 break-all">Moved @System.IO.Path.GetFileName(log.OriginalFilePath)</span>
+                        }
+                        else if (log.Status == LogStatus.Skipped)
+                        {
+                            <span class="text-yellow-400 font-bold shrink-0">[SKIPPED]</span>
+                            <span class="text-gray-300 break-all">@log.ErrorMessage</span>
+                        }
+                        else
+                        {
+                            <span class="text-red-500 font-bold shrink-0">[FAILED] </span>
+                            <span class="text-gray-300 break-all">@log.ErrorMessage</span>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-gray-600 animate-pulse">
+                    > Waiting for file activity...
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private int activeRuleCount = 0;
+    private int totalProcessedCount = 0;
+    private int failedCount = 0;
+    private List<FileExecutionLog> recentLogs = new();
+    
+    private System.Timers.Timer? refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+
+        refreshTimer = new System.Timers.Timer(3000);
+        refreshTimer.Elapsed += async (sender, e) => await RefreshData();
+        refreshTimer.AutoReset = true;
+        refreshTimer.Start();
+    }
+
+    private async Task RefreshData()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadDashboardData();
+            StateHasChanged();        });
+    }
+
+    private async Task LoadDashboardData()
+    {
+        activeRuleCount = await DbContext.OrganizerRules
+            .CountAsync(r => r.Status == RuleStatus.Active);
+
+        totalProcessedCount = await DbContext.FileExecutionLogs
+            .CountAsync(l => l.Status == LogStatus.Success);
+
+        failedCount = await DbContext.FileExecutionLogs
+            .CountAsync(l => l.Status == LogStatus.Failed || l.Status == LogStatus.Skipped);
+
+        recentLogs = await DbContext.FileExecutionLogs
+            .OrderByDescending(l => l.Timestamp)
+            .Take(10)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Stop();
+        refreshTimer?.Dispose();
+    }
+}

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TheWatcher.Data.Models;
+﻿using TheWatcher.Data.Models;
 
 namespace TheWatcher.Interfaces
 {

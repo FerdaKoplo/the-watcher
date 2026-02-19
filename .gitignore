@@ -23,6 +23,7 @@ _ReSharper*/
 *.sqlite
 *.sqlite3
 TheWatcher.db3  
+node_modules/
 
 Thumbs.db
 ehthumbs.db

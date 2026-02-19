@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TheWatcher.Data.Models;
 
 namespace TheWatcher.Data
 {
-   public class AppDbContext : DbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<OrganizerRuler> OrganizerRules { get; set; }
         public DbSet<RuleCondition> RuleConditions { get; set; }
@@ -36,4 +33,4 @@ namespace TheWatcher.Data
 
         }
     }
-} 
+}

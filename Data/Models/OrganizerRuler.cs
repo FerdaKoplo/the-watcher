@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TheWatcher.Data.Models
 {
@@ -16,34 +13,34 @@ namespace TheWatcher.Data.Models
         [Required]
         public string SourceDirectory { get; set; } = string.Empty;
 
-        public string? FileExtension {  get; set; }
+        public string? FileExtension { get; set; }
 
         public int MaxRecursionDepth { get; set; } = 0;
 
         public string? FilterNameContain { get; set; }
-        public long? MinByteSize {  get; set; }
+        public long? MinByteSize { get; set; }
         public RuleActionType ActionType { get; set; }
-        
-        public string? DestinationDirectory {  get; set; }
+
+        public string? DestinationDirectory { get; set; }
         public string? RenamePattern { get; set; }
         public RuleStatus Status { get; set; } = RuleStatus.Active;
-        public List<RuleCondition> Conditions { get; set; }
+        public List<RuleCondition> Conditions { get; set; }
     }
     public enum RuleStatus
-        {
-            Draft,
-            Active,
-            Paused,
-            Disabled,
-            Archived
-        }
+    {
+        Draft,
+        Active,
+        Paused,
+        Disabled,
+        Archived
+    }
 
-   public enum RuleActionType 
-        { 
-            Move, 
-            Copy, 
-            Rename,
-            Delete,
-            Archive
-        }
+    public enum RuleActionType
+    {
+        Move,
+        Copy,
+        Rename,
+        Delete,
+        Archive
+    }
 }
