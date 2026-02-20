@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using H.NotifyIcon;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TheWatcher.Data;
 using TheWatcher.Interfaces;
@@ -15,6 +16,7 @@ namespace TheWatcher
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseNotifyIcon()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

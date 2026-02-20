@@ -3,12 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:TheWatcher"
              xmlns:components="clr-namespace:TheWatcher.Components"
+             xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Maui"
              x:Class="TheWatcher.MainPage">
+    <Grid>
+        <tb:TaskbarIcon IconSource="appicon.ico" ToolTipText="The Watcher Worker is Active" LeftClickCommand="{Binding ShowAppCommand}">
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Open Dashboard" Command="{Binding ShowAppCommand}" />
+                    <MenuFlyoutItem Text="Exit Watcher" Command="{Binding ExitAppCommand}" />
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+        </tb:TaskbarIcon>
 
-    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
-        <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type components:Routes}" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+        <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
+            <BlazorWebView.RootComponents>
+                <RootComponent Selector="#app" ComponentType="{x:Type components:Routes}" />
+            </BlazorWebView.RootComponents>
+        </BlazorWebView>
 
+    </Grid>
 </ContentPage>
